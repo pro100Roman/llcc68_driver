@@ -162,7 +162,7 @@ typedef enum llcc68_commands_size_e
     LLCC68_SIZE_READ_BUFFER = 3,
     // DIO and IRQ Control Functions
     LLCC68_SIZE_SET_DIO_IRQ_PARAMS         = 9,
-    LLCC68_SIZE_GET_IRQ_STATUS             = 2,
+    LLCC68_SIZE_GET_IRQ_STATUS             = 4,
     LLCC68_SIZE_CLR_IRQ_STATUS             = 3,
     LLCC68_SIZE_SET_DIO2_AS_RF_SWITCH_CTRL = 2,
     LLCC68_SIZE_SET_DIO3_AS_TCXO_CTRL      = 5,
@@ -503,9 +503,11 @@ llcc68_status_t llcc68_set_dio_irq_params( const void* context, const uint16_t i
                                            const uint16_t dio2_mask, const uint16_t dio3_mask )
 {
     const uint8_t buf[LLCC68_SIZE_SET_DIO_IRQ_PARAMS] = {
-        LLCC68_SET_DIO_IRQ_PARAMS,     ( uint8_t )( irq_mask >> 8 ),  ( uint8_t )( irq_mask >> 0 ),
-        ( uint8_t )( dio1_mask >> 8 ), ( uint8_t )( dio1_mask >> 0 ), ( uint8_t )( dio2_mask >> 8 ),
-        ( uint8_t )( dio2_mask >> 0 ), ( uint8_t )( dio3_mask >> 8 ), ( uint8_t )( dio3_mask >> 0 ),
+        LLCC68_SET_DIO_IRQ_PARAMS,
+        ( uint8_t )( irq_mask >> 8 ),  ( uint8_t )( irq_mask >> 0 ),
+        ( uint8_t )( dio1_mask >> 8 ), ( uint8_t )( dio1_mask >> 0 ),
+        ( uint8_t )( dio2_mask >> 8 ), ( uint8_t )( dio2_mask >> 0 ),
+        ( uint8_t )( dio3_mask >> 8 ), ( uint8_t )( dio3_mask >> 0 ),
     };
 
     return ( llcc68_status_t ) llcc68_hal_write( context, buf, LLCC68_SIZE_SET_DIO_IRQ_PARAMS, 0, 0 );
@@ -516,15 +518,17 @@ llcc68_status_t llcc68_get_irq_status( const void* context, llcc68_irq_mask_t* i
     const uint8_t buf[LLCC68_SIZE_GET_IRQ_STATUS] = {
         LLCC68_GET_IRQ_STATUS,
         LLCC68_NOP,
+        LLCC68_NOP,
+        LLCC68_NOP
     };
-    uint8_t irq_local[sizeof( llcc68_irq_mask_t )] = { 0x00 };
+    uint8_t irq_local[4] = { 0x00 };
 
     const llcc68_status_t status = ( llcc68_status_t ) llcc68_hal_read( context, buf, LLCC68_SIZE_GET_IRQ_STATUS,
-                                                                        irq_local, sizeof( llcc68_irq_mask_t ) );
+                                                                        irq_local, sizeof( irq_local ) );
 
     if( status == LLCC68_STATUS_OK )
     {
-        *irq = ( ( llcc68_irq_mask_t ) irq_local[0] << 8 ) + ( ( llcc68_irq_mask_t ) irq_local[1] << 0 );
+        *irq = ( ( llcc68_irq_mask_t ) irq_local[2] << 8 ) + ( ( llcc68_irq_mask_t ) irq_local[3] << 0 );
     }
 
     return status;
@@ -624,7 +628,7 @@ llcc68_status_t llcc68_set_tx_params( const void* context, const int8_t pwr_in_d
 {
     const uint8_t buf[LLCC68_SIZE_SET_TX_PARAMS] = {
         LLCC68_SET_TX_PARAMS,
-        ( uint8_t ) pwr_in_dbm,
+        *( uint8_t *) &pwr_in_dbm,
         ( uint8_t ) ramp_time,
     };
 
