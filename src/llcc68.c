@@ -897,26 +897,14 @@ llcc68_status_t llcc68_get_gfsk_pkt_status( const void* context, llcc68_pkt_stat
         LLCC68_GET_PKT_STATUS,
         LLCC68_NOP,
     };
-    uint8_t pkt_status_local[3] = { 0x00 };
+    uint8_t pkt_status_local[sizeof( llcc68_pkt_status_gfsk_t )] = { 0x00 };
 
     const llcc68_status_t status =
-        ( llcc68_status_t ) llcc68_hal_read( context, buf, LLCC68_SIZE_GET_PKT_STATUS, pkt_status_local, 3 );
+        ( llcc68_status_t ) llcc68_hal_read( context, buf, LLCC68_SIZE_GET_PKT_STATUS, pkt_status_local, sizeof( llcc68_pkt_status_gfsk_t ) );
 
     if( status == LLCC68_STATUS_OK )
     {
-        pkt_status->rx_status.pkt_sent =
-            ( ( pkt_status_local[0] & LLCC68_GFSK_RX_STATUS_PKT_SENT_MASK ) != 0 ) ? true : false;
-        pkt_status->rx_status.pkt_received =
-            ( ( pkt_status_local[0] & LLCC68_GFSK_RX_STATUS_PKT_RECEIVED_MASK ) != 0 ) ? true : false;
-        pkt_status->rx_status.abort_error =
-            ( ( pkt_status_local[0] & LLCC68_GFSK_RX_STATUS_ABORT_ERROR_MASK ) != 0 ) ? true : false;
-        pkt_status->rx_status.length_error =
-            ( ( pkt_status_local[0] & LLCC68_GFSK_RX_STATUS_LENGTH_ERROR_MASK ) != 0 ) ? true : false;
-        pkt_status->rx_status.crc_error =
-            ( ( pkt_status_local[0] & LLCC68_GFSK_RX_STATUS_CRC_ERROR_MASK ) != 0 ) ? true : false;
-        pkt_status->rx_status.adrs_error =
-            ( ( pkt_status_local[0] & LLCC68_GFSK_RX_STATUS_ADRS_ERROR_MASK ) != 0 ) ? true : false;
-
+        pkt_status->rx_status = *(llcc68_rx_status_gfsk_t*)&pkt_status_local[0];
         pkt_status->rssi_sync = ( int8_t )( -pkt_status_local[1] >> 1 );
         pkt_status->rssi_avg  = ( int8_t )( -pkt_status_local[2] >> 1 );
     }

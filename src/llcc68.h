@@ -613,12 +613,14 @@ typedef struct llcc68_rx_buffer_status_s
 
 typedef struct llcc68_rx_status_gfsk_s
 {
-    bool pkt_sent;
-    bool pkt_received;
-    bool abort_error;
-    bool length_error;
-    bool crc_error;
-    bool adrs_error;
+    bool pkt_sent       : 1;
+    bool pkt_received   : 1;
+    bool abort_error    : 1;
+    bool length_error   : 1;
+    bool crc_error      : 1;
+    bool adrs_error     : 1;
+    bool sync_error     : 1;
+    bool preamble_error : 1;
 } llcc68_rx_status_gfsk_t;
 
 /**
