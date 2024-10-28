@@ -1030,6 +1030,7 @@ llcc68_status_t llcc68_get_device_errors( const void* context, llcc68_errors_mas
     if( status == LLCC68_STATUS_OK )
     {
         *errors = ( ( llcc68_errors_mask_t ) errors_local[0] << 8 ) + ( ( llcc68_errors_mask_t ) errors_local[1] << 0 );
+        *errors &= 0x17F;
     }
 
     return status;
